@@ -24,16 +24,6 @@ export interface SQLiteCon extends DbConBase {
   cleanUpQueries?: string;
 }
 
-// export type RelationDef= {
-//   socketId: SocketIdType,
-//   dbName: string,
-//   // FIXME
-//   // relationNames should be unique across socketIds! but this might make the db blow up
-//   // Need to have a longer design discussion.
-//   relationName: string,
-//   relationType: string
-// };
-
 // FUTURE: add types of different DBs
 
 export type DbCon = SQLiteCon;

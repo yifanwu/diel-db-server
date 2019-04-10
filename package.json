@@ -14,7 +14,6 @@
   "dependencies": {
     "@types/better-sqlite3": "^5.2.2",
     "better-sqlite3": "^5.4.0",
-    "diel": "file:../diel2/diel-1.0.6.tgz",
     "express": "^4.16.4",
     "mysql": "^2.16.0",
     "pg": "^7.9.0",
