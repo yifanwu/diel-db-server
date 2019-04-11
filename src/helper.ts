@@ -1,7 +1,6 @@
 import * as sqlite from "better-sqlite3";
 
-import { DbCon, DbDriver, DbInfo, DbNameType, StmtType } from "./types";
-import { dbFileLookup } from "./store";
+import { DbCon, DbDriver, DbConfig, DbNameType, StmtType } from "./types";
 import { LogError, LogWarning } from "./messages";
 
 export function CloseDb(dbCon: DbCon) {
@@ -14,34 +13,34 @@ export function CloseDb(dbCon: DbCon) {
   }
 }
 
-export function OpenDb(dbName: DbNameType): DbCon | null {
-  const dbInfo = dbFileLookup.get(dbName);
-  if (!dbInfo) {
-    LogError(`Db ${dbName} not defined`);
-    return null;
-  }
-  switch (dbInfo.driver) {
+export function OpenDb(config: DbConfig): DbCon | null {
+  switch (config.driver) {
     case DbDriver.SQLite:
-      const db = new sqlite(dbInfo.path);
-      return {
-        db,
-        driver: DbDriver.SQLite,
-        statements: new Map(),
-      };
+      try {
+        const db = new sqlite(config.path);
+        return {
+          db,
+          driver: DbDriver.SQLite,
+          statements: new Map(),
+        };
+      } catch (e) {
+        LogError(`${e} while trying to open ${config.path}.`);
+        return null;
+      }
     default:
-      LogError(`Db type [${dbInfo.driver}] is not supported.`);
+      LogError(`Db type [${config.driver}] is not supported.`);
       return null;
   }
 }
 
-export function RunToDb(dbCon: DbCon, sql: string) {
+export function RunToDb(dbCon: DbCon, sql: string): sqlite.Database | null {
   switch (dbCon.driver) {
     case DbDriver.SQLite:
       try {
         return dbCon.db.exec(sql);
       } catch (e) {
         LogWarning(`Error executing to database! ${e}\nThe query was ${sql}`);
-        return;
+        return null;
       }
     default:
       LogError(`Db type [${dbCon.driver}] is not supported.`);

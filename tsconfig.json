@@ -6,12 +6,8 @@
       "strict": true,
       "resolveJsonModule": true,
       "sourceMap": true,
-      "typeRoots": [
-          "node_modules/@types"
-      ]
+      "declaration": true
   },
-  "exclude": [
-      "build",
-      "node_modules"
-  ]
+  "files": ["./src/index.ts"],
+  "include": ["./src/**/*", "./package.json"]
 }
