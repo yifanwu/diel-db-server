@@ -61,6 +61,12 @@ export function StartDielDbServer(configs: DbConfig[]) {
       console.log("closed", socketId);
     });
 
+    /**
+     * run is overloaded with creates, inserts
+     * exec is reading, we assume that reading is static
+     * TODO
+     * - each exec is assumed to have a prepared statement
+     */
     ws.on("message", (message: string) => {
       // log the received message and send it back to the client
       console.log("\nreceived: %s", message);

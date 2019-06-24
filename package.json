@@ -9,7 +9,8 @@
   ],
   "scripts": {
     "build": "tsc",
-    "dev": "tsc --watch"
+    "dev": "tsc --watch",
+    "test": "tsc -b tests/ && node build/tests/index.js"
   },
   "repository": {
     "type": "git",
@@ -20,9 +21,11 @@
   "dependencies": {
     "@types/better-sqlite3": "^5.2.2",
     "@types/express": "^4.16.1",
+    "@types/pg": "^7.4.14",
     "@types/ws": "^6.0.1",
     "better-sqlite3": "^5.4.0",
     "express": "^4.16.4",
+    "pg": "^7.11.0",
     "ws": "^6.1.4"
   },
   "devDependencies": {
