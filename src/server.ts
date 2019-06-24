@@ -1,7 +1,7 @@
 import * as express from "express";
 import * as http from "http";
 import * as WebSocket from "ws";
-import { LogWarning, LogInfo, LogError } from "./messages";
+import { LogWarning, LogInfo, LogError, TraceEvents } from "./messages";
 import { DbNameType, DbCon, SocketIdType, DbConfig } from "./types";
 import { CloseDb, OpenDb, RunToDb, QueryFromDb } from "./helper";
 
@@ -61,38 +61,29 @@ export function StartDielDbServer(configs: DbConfig[]) {
       console.log("closed", socketId);
     });
 
-    /**
-     * run is overloaded with creates, inserts
-     * exec is reading, we assume that reading is static
-     * TODO
-     * - each exec is assumed to have a prepared statement
-     */
-    ws.on("message", (message: string) => {
+    async function handleMessage (message: string): Promise<null> {
       // log the received message and send it back to the client
       console.log("\nreceived: %s", message);
       let msg: DielMessage | undefined;
       try {
         msg = JSON.parse(message) as DielMessage;
       } catch (e) {
-        LogError(`Message is not the expected JSON format: ${e}`);
-        return;
+        return LogError(`Message is not the expected JSON format: ${e}`);
       }
       // TODO: make sure that all the messages contains dbName for the future.
       const dbName = msg.message ? msg.message.dbName : null;
       if (!dbName) {
-        LogWarning(`The message ${JSON.stringify(msg)} did not define dbName as expected.`);
-        return;
+        return LogWarning(`The message ${JSON.stringify(msg)} did not define dbName as expected.`);
       }
       const dbs = allDbs.get(socketId);
       if (!dbs) {
-        LogError(`socket Dbs not defined for ${socketId}`);
-        return;
+        return LogError(`socket Dbs not defined for ${socketId}`);
       }
       switch (msg.action) {
         case "close": {
           const dbCon = dbs.get(dbName);
           if (dbCon) CloseDb(dbCon);
-          break;
+          return null;
         }
         case "cleanup": {
           const dbCon = dbs.get(dbName);
@@ -101,14 +92,14 @@ export function StartDielDbServer(configs: DbConfig[]) {
           ws.send(JSON.stringify({
             id: msg.id
           }));
-          break;
+          return null;
         }
         case "open": {
           if (dbs.has(dbName)) {
             // no op
-            return;
+            return null;
           }
-          console.log(`Opening ${dbName}`);
+          TraceEvents(`Opening ${dbName}`);
           const dbConfig = configs.find(c => c.dbName === dbName);
           if (dbConfig) {
             const dbInfo = OpenDb(dbConfig);
@@ -117,8 +108,7 @@ export function StartDielDbServer(configs: DbConfig[]) {
               id: msg.id
             }));
           } else {
-            LogError(`Db ${dbName} not defined`);
-            return null;
+            return LogError(`Db ${dbName} not defined`);
           }
           break;
         }
@@ -130,35 +120,42 @@ export function StartDielDbServer(configs: DbConfig[]) {
               ws.send(JSON.stringify({
                 id: msg.id,
               }));
+              return null;
             } else {
-            LogWarning(`${dbName} not opened`);
+            return LogWarning(`${dbName} not opened`);
           }
-          break;
         }
         case "exec": {
           if (msg.sql) {
             const dbCon = dbs.get(dbName);
             if (dbCon) {
-              const results = QueryFromDb(dbCon, msg.sql);
-              LogInfo(`Result for exec action`);
-              LogInfo(JSON.stringify(results, null, 2));
+              const results = await QueryFromDb(dbCon, msg.sql);
+              TraceEvents(`Result for exec action\n-------------\n${JSON.stringify(results, null, 2)}\n----------------`);
               ws.send(JSON.stringify({
                 id: msg.id,
                 results
               }));
+              return null;
             } else {
-              LogWarning(`Connection not found`);
+              return LogWarning(`Connection not found`);
             }
           } else {
-            LogWarning(`Exec actions must define the query and the db name`);
+            return LogWarning(`Exec actions must define the query and the db name`);
           }
-          break;
         }
         default: {
-          LogWarning(`Action ${msg.action} not defined`);
+          return LogWarning(`Action ${msg.action} not defined`);
         }
       }
-    });
+      return null;
+    }
+    /**
+     * run is overloaded with creates, inserts
+     * exec is reading, we assume that reading is static
+     * TODO
+     * - each exec is assumed to have a prepared statement
+     */
+    ws.on("message", handleMessage);
 
     // FIXME: should prob use prepared statements instead...
     // https://github.com/JoshuaWise/better-sqlite3/blob/master/docs/api.md#class-statement

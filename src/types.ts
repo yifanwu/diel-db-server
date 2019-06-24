@@ -5,6 +5,8 @@ import { Client } from "pg";
 
 
 interface DbConfigBase {
+  // this is internal to diel, not the actual db name
+  // hm then it should just remember by client??
   dbName: string;
   driver: DbDriver;
 }
@@ -13,8 +15,14 @@ export interface SqliteDbConfig extends DbConfigBase {
   path: string;
 }
 
+export interface PostgresDbConfig extends DbConfigBase {
+  // todo: might need to add extra, for now just using default
+  database?: string;
+  user?: string;
+}
+
 // TODO: add others
-export type DbConfig = SqliteDbConfig;
+export type DbConfig = SqliteDbConfig | PostgresDbConfig;
 
 export enum DbDriver {
   SQLite = "SQLite",

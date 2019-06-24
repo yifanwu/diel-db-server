@@ -1,8 +1,8 @@
 import * as sqlite from "better-sqlite3";
 import { Client, QueryConfig, QueryArrayConfig, QueryArrayResult } from "pg";
 
-import { DbCon, DbDriver, DbConfig, DbNameType, StmtType, SQLiteCon, PostgresCon } from "./types";
-import { LogError, LogWarning } from "./messages";
+import { DbCon, PostgresDbConfig, DbConfig, DbNameType, StmtType, SQLiteCon, PostgresCon, DbDriver } from "./types";
+import { LogError, LogWarning, TraceEvents } from "./messages";
 import { randString, GetHashCode } from "./util";
 import { SqliteDbConfig } from ".";
 
@@ -23,9 +23,10 @@ export function CloseDb(dbCon: DbCon) {
   }
 }
 
-export function OpenDb(config: DbConfig): DbCon | null {
-  switch (config.driver) {
+export function OpenDb(configOriginal: DbConfig): DbCon | null {
+  switch (configOriginal.driver) {
     case DbDriver.SQLite: {
+      const config = configOriginal as SqliteDbConfig;
       try {
         const db = new sqlite(config.path);
         return {
@@ -39,6 +40,7 @@ export function OpenDb(config: DbConfig): DbCon | null {
       }
     }
     case DbDriver.Postgres: {
+      const config = configOriginal as PostgresDbConfig;
       try {
         const db = new Client();
         return {
@@ -47,12 +49,12 @@ export function OpenDb(config: DbConfig): DbCon | null {
           statements: new Map(),
         };
       } catch (e) {
-        LogError(`${e} while trying to open ${config.path}.`);
+        LogError(`${e} while trying to open Postgres with config ${JSON.stringify(configOriginal)}.`);
         return null;
       }
     }
     default:
-      LogError(`Db type [${config.driver}] is not supported.`);
+      LogError(`Db type [${configOriginal.driver}] is not supported.`);
       return null;
   }
 }
@@ -95,6 +97,7 @@ export async function RunToDb(dbCon: DbCon, sql: string): Promise<boolean> {
 // FIXME: maybe create shorter hashses
 // and prepared statements are not parametrized
 export async function QueryFromDb(dbCon: DbCon, sql: string): Promise<any[] | null> {
+  TraceEvents(`queryfromdb invoked to get ${sql}, and the connection information is\n--------------\n${JSON.stringify(dbCon)}\n----------------------\n`);
   switch (dbCon.driver) {
     case DbDriver.SQLite: {
       const con = dbCon as SQLiteCon;
@@ -118,24 +121,27 @@ export async function QueryFromDb(dbCon: DbCon, sql: string): Promise<any[] | nu
         return LogError(`Statement for ${sql} cannot be defined`);
       }
     }
-    case DbDriver.Postgres:
+    case DbDriver.Postgres: {
       const con = dbCon as PostgresCon;
       // need to create a name and store it in the map
-      const sqlHash = GetHashCode(sql).toString();
-      const queryConfig: QueryArrayConfig = {
-        rowMode: "array",
-        name: sqlHash,
-        text: sql,
-      };
+      // TODO: this will speed things up...
+      // const sqlHash = GetHashCode(sql).toString();
+      // const queryConfig: QueryArrayConfig = {
+      //   rowMode: "array",
+      //   name: sqlHash,
+      //   text: sql,
+      // };
       try {
-        const r = await con.db.query(queryConfig);
-        return packPostgresQueryArrayResultToObject(r);
+        TraceEvents(`querying ${sql} now`);
+        const r = await con.db.query(sql);
+        TraceEvents(`Got raw results, ${JSON.stringify(r)}`);
+        return r.rows;
+        // return packPostgresQueryArrayResultToObject(r);
       } catch (e) {
         return LogWarning(`Error executing to Postgres database! ${e}`);
       }
-      // doesn't matter if it's created or not actually
-      // the insertions should not be prepared
       break;
+    }
     default:
       return LogError(`Driver ${dbCon.driver} not handled`);
   }

@@ -1,7 +1,9 @@
 import { testPostgresSetup } from "./postgresTest";
+import { testPostgresEndToEnd } from "./endToEndTest";
 
 function main() {
-  testPostgresSetup();
+  // testPostgresSetup();
+  testPostgresEndToEnd();
 }
 
 main();

@@ -10,7 +10,8 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
-    "test": "tsc -b tests/ && node build/tests/index.js"
+    "test": "tsc -b tests/ && node build/tests/index.js",
+    "debug": "tsc -b tests/ && node --inspect-brk -r ts-node/register tests/index.ts"
   },
   "repository": {
     "type": "git",
@@ -30,6 +31,7 @@
   },
   "devDependencies": {
     "nodemon": "^1.18.11",
+    "ts-node": "^8.3.0",
     "typescript": "^3.3.3333"
   }
 }

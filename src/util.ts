@@ -1,3 +1,5 @@
+export const DefaultUrl = "ws://localhost:8999";
+
 export function GetHashCode (str: string) {
   let hash = 0, i, chr;
   if (str.length === 0) return hash;
