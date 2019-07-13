@@ -49,7 +49,7 @@ export async function testPostgresEndToEnd() {
       sql: "select * from testTable limit 5",
       message
     }));
-  }, 100);
+  }, 500);
   client.on("message", (message: string) => {
     clientLog(`message\n---------\n${JSON.stringify(message)}\n--------\n`);
     const parsedMessage = JSON.parse(message);
