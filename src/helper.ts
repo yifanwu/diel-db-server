@@ -43,6 +43,7 @@ export function OpenDb(configOriginal: DbConfig): DbCon | null {
       const config = configOriginal as PostgresDbConfig;
       try {
         const db = new Client();
+        db.connect();
         return {
           db,
           driver: DbDriver.Postgres,
