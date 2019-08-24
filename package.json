@@ -10,8 +10,10 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
+    "testServer": "tsc -b tests/ && node build/tests/testServer.js",
     "test": "tsc -b tests/ && node build/tests/index.js",
-    "debug": "tsc -b tests/ && node --inspect-brk -r ts-node/register tests/index.ts"
+    "debug": "tsc -b tests/ && node --inspect-brk -r ts-node/register tests/index.ts",
+    "timeseries": "tsc -b tests/ && node build/tests/testTimeseries.js"
   },
   "repository": {
     "type": "git",
