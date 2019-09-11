@@ -3,7 +3,8 @@ import { StartDielDbServer, DbDriver } from "../src";
 
 import { PostgresDbConfig, SqliteDbConfig } from "../src/types";
 
-const dbName = "sensors";
+// const dbName = "sensors";
+const dbName = "davidkim";
 
 function runWithPostgres() {
 
@@ -25,4 +26,5 @@ function runWithSqlite() {
   console.log(`We are starting a server with data found in ${path}.`);
 }
 
-runWithSqlite();
+runWithPostgres();
+// runWithSqlite();

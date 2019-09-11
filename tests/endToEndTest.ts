@@ -18,7 +18,7 @@ function clientLog(m: string) {
  */
 export async function testPostgresEndToEnd() {
   // INSTRUCTIONS: change the dbName here to an instance you have locally
-  const dbName = "postgresTest";
+  const dbName = "davidkim";
   const message = {
     dbName
   };
