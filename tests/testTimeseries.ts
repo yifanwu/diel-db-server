@@ -3,8 +3,8 @@ import { StartDielDbServer, DbDriver } from "../src";
 
 import { PostgresDbConfig, SqliteDbConfig } from "../src/types";
 
-// const dbName = "sensors";
-const dbName = "davidkim";
+const dbName = "sensors";
+// const dbName = "davidkim";
 
 function runWithPostgres() {
 

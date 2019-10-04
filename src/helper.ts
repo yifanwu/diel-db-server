@@ -1,5 +1,5 @@
 import * as sqlite from "better-sqlite3";
-import { Client, ClientConfig, QueryConfig, QueryArrayConfig, QueryArrayResult } from "pg";
+import { Client, ClientConfig, QueryConfig, QueryArrayConfig, QueryArrayResult, ConnectionConfig } from "pg";
 
 import { DbCon, PostgresDbConfig, DbConfig, DbNameType, StmtType, SQLiteCon, PostgresCon, DbDriver } from "./types";
 import { LogError, LogWarning, TraceEvents } from "./messages";
@@ -41,7 +41,14 @@ export function OpenDb(configOriginal: DbConfig): DbCon | null {
     }
     case DbDriver.Postgres: {
       try {
-        const db = new Client();
+        // define postgres config configuration
+        const connectionConfig: ConnectionConfig = {
+          database: (<PostgresDbConfig> configOriginal).dbName,
+          user: (<PostgresDbConfig> configOriginal).user,
+          host: (<PostgresDbConfig> configOriginal).host,
+          port: (<PostgresDbConfig> configOriginal).port,
+        };
+        const db = new Client(connectionConfig);
         db.connect();
         return {
           db,
