@@ -19,7 +19,6 @@ interface DielMessage {
 }
 
 export function StartDielDbServer(configs: DbConfig[]) {
-
   const app = express();
   // initialize a simple http server
   const server = http.createServer(app);
