@@ -10,7 +10,10 @@ function runWithPostgres() {
 
   const postgresDbConfig: PostgresDbConfig = {
     dbName, // yifan's local test, hacky
-    driver: DbDriver.Postgres
+    driver: DbDriver.Postgres,
+    user: "Lucie",
+    host: "localhost",
+    port: 5432,
   };
   StartDielDbServer([postgresDbConfig]);
 }

@@ -42,11 +42,12 @@ export function OpenDb(configOriginal: DbConfig): DbCon | null {
     case DbDriver.Postgres: {
       try {
         // define postgres config configuration
+        const postgresDbConfig = configOriginal as PostgresDbConfig;
         const connectionConfig: ConnectionConfig = {
-          database: (<PostgresDbConfig> configOriginal).dbName,
-          user: (<PostgresDbConfig> configOriginal).user,
-          host: (<PostgresDbConfig> configOriginal).host,
-          port: (<PostgresDbConfig> configOriginal).port,
+          database: configOriginal.dbName,
+          user: postgresDbConfig.user,
+          host: postgresDbConfig.host,
+          port: postgresDbConfig.port,
         };
         const db = new Client(connectionConfig);
         db.connect();
@@ -104,7 +105,7 @@ export async function RunToDb(dbCon: DbCon, sql: string): Promise<boolean> {
 // FIXME: maybe create shorter hashses
 // and prepared statements are not parametrized
 export async function QueryFromDb(dbCon: DbCon, sql: string): Promise<any[] | null> {
-  TraceEvents(`queryfromdb invoked to get ${sql}, and the connection information is\n--------------\n${JSON.stringify(dbCon.statements)}\n----------------------\n`);
+  TraceEvents(`queryfromdb invoked to get ${sql}\n`);
   switch (dbCon.driver) {
     case DbDriver.SQLite: {
       const con = dbCon as SQLiteCon;

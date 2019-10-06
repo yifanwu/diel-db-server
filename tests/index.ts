@@ -3,7 +3,6 @@ import { testPostgresEndToEnd } from "./endToEndTest";
 
 function main() {
   testPostgresEndToEnd();
-  // testPostgresConnection();
 }
 
 main();

@@ -25,9 +25,6 @@ export async function testPostgresEndToEnd() {
   const postgresDbConfig: PostgresDbConfig = {
     dbName, // yifan's local test, hacky
     driver: DbDriver.Postgres,
-    user: "Lucie",
-    host: "localhost",
-    port: 5334,
   };
   StartDielDbServer([postgresDbConfig]);
   const client = new WebSocket(DefaultUrl);
@@ -38,26 +35,20 @@ export async function testPostgresEndToEnd() {
       message
     }));
     client.send(JSON.stringify({
-      id: "testExec",
+      id: "testSetUp",
       action: "exec",
-      sql: "select * from log limit 5",
+      sql: `drop table if exists testTable;
+            create table testTable (user_id integer);
+            insert into testTable values (1), (2), (3);`,
       message
     }));
-    // client.send(JSON.stringify({
-    //   id: "testSetUp",
-    //   action: "exec",
-    //   sql: `drop table if exists testTable;
-    //         create table testTable (user_id integer);
-    //         insert into testTable values (1), (2), (3);`,
-    //   message
-    // }));
-    // // I think this is synchronous?
-    // client.send(JSON.stringify({
-    //   id: "testExec",
-    //   action: "exec",
-    //   sql: "select * from testTable limit 5",
-    //   message
-    // }));
+    // I think this is synchronous?
+    client.send(JSON.stringify({
+      id: "testExec",
+      action: "exec",
+      sql: "select * from testTable limit 5",
+      message
+    }));
   }, 500);
   client.on("message", (message: string) => {
     clientLog(`message\n---------\n${JSON.stringify(message)}\n--------\n`);
