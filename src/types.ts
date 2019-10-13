@@ -21,6 +21,7 @@ export interface PostgresDbConfig extends DbConfigBase {
   user?: string;
   port?: number;
   host?: string;
+  password?: string;
 }
 
 // TODO: add others
