@@ -81,7 +81,12 @@ export function StartDielDbServer(configs: DbConfig[]) {
       switch (msg.action) {
         case "close": {
           const dbCon = dbs.get(dbName);
-          if (dbCon) CloseDb(dbCon);
+          if (dbCon) {
+            if (dbCon.cleanUpQueries) {
+              RunToDb(dbCon, dbCon.cleanUpQueries);
+            }
+            CloseDb(dbCon)
+          };
           return null;
         }
         case "cleanup": {
