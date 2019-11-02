@@ -49,7 +49,9 @@ export function StartDielDbServer(configs: DbConfig[]) {
       if (dbs) {
         dbs.forEach((dbCon, dbName) => {
           if (dbCon.cleanUpQueries) {
+            console.log("?????????what is this");
             RunToDb(dbCon, dbCon.cleanUpQueries);
+            console.log("!!!!!!!!!!!!what is this");
           } else {
             LogError(`Cleanup queries not defined for ${dbName}`);
           }
@@ -83,9 +85,13 @@ export function StartDielDbServer(configs: DbConfig[]) {
           const dbCon = dbs.get(dbName);
           if (dbCon) {
             if (dbCon.cleanUpQueries) {
-              RunToDb(dbCon, dbCon.cleanUpQueries);
+              const queries = dbCon.cleanUpQueries.split(";");
+              for (let q of queries) {
+                const results = await QueryFromDb(dbCon, q + ";");
+                TraceEvents(`Result for exec action\n-------------\n${JSON.stringify(results, null, 2)}\n----------------`);
+              }
             }
-            CloseDb(dbCon)
+            CloseDb(dbCon);
           };
           return null;
         }

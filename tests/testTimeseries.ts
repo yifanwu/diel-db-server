@@ -44,5 +44,5 @@ function runWithSqlite() {
 }
 
 // runWithPostgresRDS();
-// runWithPostgres();
-runWithSqlite();
+runWithPostgres();
+// runWithSqlite();
