@@ -6,7 +6,7 @@ const dbName = "sensors";
 const userName = "diel";
 
 function runWithPostgres() {
-  console.log("\x1b[43m", `Connecting to Postgres Local. dbName: ${dbName} user: Lucie`, "\x1b[0m");
+  console.log("\x1b[43m", `Connecting to Postgres Local. dbName: ${dbName} user: davidkim`, "\x1b[0m");
   const postgresDbConfig: PostgresDbConfig = {
     dbName, // yifan's local test, hacky
     driver: DbDriver.Postgres,
@@ -26,7 +26,7 @@ function runWithPostgresRDS() {
     user: userName,
     host: "database-1.cop41batycrj.us-west-1.rds.amazonaws.com",
     port: 5432,
-    password,
+    password
   };
   StartDielDbServer([postgresDbConfig]);
 }
