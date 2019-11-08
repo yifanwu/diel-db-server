@@ -115,9 +115,17 @@ export function StartDielDbServer(configs: DbConfig[]) {
         case "run": {
             const dbCon = dbs.get(dbName);
             if (dbCon) {
+              const execStart = new Date();
+
               RunToDb(dbCon, msg.sql);
+
+              const execEnd = new Date();
+
+              const execTime = execEnd.getTime() - execStart.getTime();
+
               ws.send(JSON.stringify({
                 id: msg.id,
+                execTime: execTime
               }));
               return null;
             } else {
@@ -128,11 +136,22 @@ export function StartDielDbServer(configs: DbConfig[]) {
           if (msg.sql) {
             const dbCon = dbs.get(dbName);
             if (dbCon) {
-              const results = await QueryFromDb(dbCon, msg.sql);
+
+              const execStart = new Date();
+
+              const results = await QueryFromDb(dbCon, msg.sql); // I assume this is where it executes?
+
+              const execEnd = new Date();
+
+              const execTime = execEnd.getTime() - execStart.getTime();
+
+              console.log("EXEC TIME FROM DB SEVER IS " + execTime);
+
               TraceEvents(`Result for exec action\n-------------\n${JSON.stringify(results, null, 2)}\n----------------`);
               ws.send(JSON.stringify({
                 id: msg.id,
-                results
+                results,
+                execTime: execTime
               }));
               return null;
             } else {

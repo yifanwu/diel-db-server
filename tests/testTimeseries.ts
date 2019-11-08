@@ -11,7 +11,7 @@ function runWithPostgres() {
   const postgresDbConfig: PostgresDbConfig = {
     dbName, // yifan's local test, hacky
     driver: DbDriver.Postgres,
-    user: "Lucie",
+    user: "davidkim",
     host: "localhost",
     port: 5432,
   };
