@@ -48,6 +48,7 @@ export function OpenDb(configOriginal: DbConfig): DbCon | null {
           user: postgresDbConfig.user,
           host: postgresDbConfig.host,
           port: postgresDbConfig.port,
+          password: postgresDbConfig.password,
         };
         const db = new Client(connectionConfig);
         db.connect();

@@ -2,7 +2,7 @@ import * as express from "express";
 import * as http from "http";
 import * as WebSocket from "ws";
 import { LogWarning, LogInfo, LogError, TraceEvents } from "./messages";
-import { DbNameType, DbCon, SocketIdType, DbConfig } from "./types";
+import { DbNameType, DbCon, SocketIdType, DbConfig, DbDriver } from "./types";
 import { CloseDb, OpenDb, RunToDb, QueryFromDb } from "./helper";
 
 interface DielMessage {
@@ -49,7 +49,9 @@ export function StartDielDbServer(configs: DbConfig[]) {
       if (dbs) {
         dbs.forEach((dbCon, dbName) => {
           if (dbCon.cleanUpQueries) {
+            console.log("?????????what is this");
             RunToDb(dbCon, dbCon.cleanUpQueries);
+            console.log("!!!!!!!!!!!!what is this");
           } else {
             LogError(`Cleanup queries not defined for ${dbName}`);
           }
@@ -81,7 +83,29 @@ export function StartDielDbServer(configs: DbConfig[]) {
       switch (msg.action) {
         case "close": {
           const dbCon = dbs.get(dbName);
-          if (dbCon) CloseDb(dbCon);
+          if (dbCon) {
+            if (dbCon.cleanUpQueries) {
+              switch(dbCon.driver) {
+                case DbDriver.Postgres: {
+                  const queries = dbCon.cleanUpQueries.split(";");
+                  for (let q of queries) {
+                    const results = await QueryFromDb(dbCon, q + ";");
+                    TraceEvents(`Result for exec action\n-------------\n${JSON.stringify(results, null, 2)}\n----------------`);
+                  }
+                  break;
+                }
+                case DbDriver.SQLite: {
+                  TraceEvents(`Clean up \n${dbCon.cleanUpQueries}`);
+                  RunToDb(dbCon, dbCon.cleanUpQueries);
+                  break;
+                }
+                default: {
+                  RunToDb(dbCon, dbCon.cleanUpQueries);
+                }
+              }
+            }
+            CloseDb(dbCon);
+          };
           return null;
         }
         case "cleanup": {
