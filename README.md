@@ -4,6 +4,10 @@ A thin wrapper layer that connects to different provided databases.
 
 Please refer to [this example repo](https://github.com/yifanwu/diel-db-server-examples) if you want to see how this repo is used --- currently, that example uses the Pitchfork dataset.
 
+## How to use
+
+This repo is used in conjunction with DIEL. 
+
 ## Supported DBs
 
 We currently support SQLite (better-sqlite3) add Postgres. We will also add support for an AWS DB.
@@ -66,3 +70,14 @@ export const diel = new DielRuntime({
 });
 
 ```
+
+## Architecture (Dev)
+
+This starts the servers that DIEL needs to talk to.
+
+Messages should just be one of the following:
+
+- one time SQL queries that asks for a response
+- define a view as a prepared statement
+- insertion, and the relevant views that also need to be retrieved
+- getting a broadcasted message about what the id for the socket is.
