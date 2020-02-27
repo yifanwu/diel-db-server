@@ -220,6 +220,11 @@ export class DielDbServer {
             const shipMsg = msg as RemoteShipRelationMessage;
             this.shipRelation(shipMsg);
           }
+          case DielRemoteAction.SetExecutionMetaData: {
+            const metaMsg = msg as Remotemeta;
+
+            this.taskMetaData = 
+          }
           default: {
             LogError("Not all cases handled");
           }
