@@ -15,6 +15,7 @@ interface DielMessage {
   };
   message?: {
     dbName: string;
+    toPrint: string; // for testing rn
   };
 }
 
@@ -149,7 +150,7 @@ export function StartDielDbServer(configs: DbConfig[]) {
 
               ws.send(JSON.stringify({
                 id: msg.id,
-                execTime: execTime
+                // execTime: execTime
               }));
               return null;
             } else {
@@ -185,6 +186,12 @@ export function StartDielDbServer(configs: DbConfig[]) {
             return LogWarning(`Exec actions must define the query and the db name`);
           }
         }
+        case "relay": { // new API to handle db server to db server connection
+          const toPrint = msg.message ? msg.message.toPrint : null;
+          console.log("I got called!!!!");
+          console.log(toPrint);
+          return null;
+        }
         default: {
           return LogWarning(`Action ${msg.action} not defined`);
         }
@@ -211,5 +218,7 @@ export function StartDielDbServer(configs: DbConfig[]) {
   // start our server
   server.listen(process.env.PORT || 8999, () => {
       console.log(`Server started on port ${(server.address() as WebSocket.AddressInfo).port} :)`);
+
+      // console.log(server.address());
   });
 }

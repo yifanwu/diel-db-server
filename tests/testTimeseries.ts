@@ -2,7 +2,8 @@ import { resolve } from "path";
 import { StartDielDbServer, DbDriver } from "../src";
 import { PostgresDbConfig, SqliteDbConfig } from "../src/types";
 
-const dbName = "sensors";
+// const dbName = "sensors";
+const dbName = "eval";
 const userName = "diel";
 
 function runWithPostgres() {
