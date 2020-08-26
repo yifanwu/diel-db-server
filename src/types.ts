@@ -19,6 +19,9 @@ export interface PostgresDbConfig extends DbConfigBase {
   // todo: might need to add extra, for now just using default
   database?: string;
   user?: string;
+  port?: number;
+  host?: string;
+  password?: string;
 }
 
 // TODO: add others

@@ -7,12 +7,12 @@ export async function testPostgresSetup() {
   // this is the same as when you connect in terminal as `psql`
   //   which usually takes your users
   //   note that you can also specify
-  // const clientConfig: ClientConfig = {
-  //   user: "",
-  //   database: "",
-  //   port: ,
-  //   host:
-  // };
+  const clientConfig: ClientConfig = {
+    user: "davidkim",
+    database: "davidkim",
+    port: 5432,
+    host: "localhost"
+  };
   await client.connect();
   async function setupTest() {
 

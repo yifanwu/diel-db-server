@@ -18,13 +18,13 @@ function clientLog(m: string) {
  */
 export async function testPostgresEndToEnd() {
   // INSTRUCTIONS: change the dbName here to an instance you have locally
-  const dbName = "postgresTest";
+  const dbName = "sensors";
   const message = {
     dbName
   };
   const postgresDbConfig: PostgresDbConfig = {
     dbName, // yifan's local test, hacky
-    driver: DbDriver.Postgres
+    driver: DbDriver.Postgres,
   };
   StartDielDbServer([postgresDbConfig]);
   const client = new WebSocket(DefaultUrl);

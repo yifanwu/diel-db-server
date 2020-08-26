@@ -1,5 +1,5 @@
 import * as sqlite from "better-sqlite3";
-import { Client, QueryConfig, QueryArrayConfig, QueryArrayResult } from "pg";
+import { Client, ClientConfig, QueryConfig, QueryArrayConfig, QueryArrayResult, ConnectionConfig } from "pg";
 
 import { DbCon, PostgresDbConfig, DbConfig, DbNameType, StmtType, SQLiteCon, PostgresCon, DbDriver } from "./types";
 import { LogError, LogWarning, TraceEvents } from "./messages";
@@ -40,9 +40,17 @@ export function OpenDb(configOriginal: DbConfig): DbCon | null {
       }
     }
     case DbDriver.Postgres: {
-      const config = configOriginal as PostgresDbConfig;
       try {
-        const db = new Client();
+        // define postgres config configuration
+        const postgresDbConfig = configOriginal as PostgresDbConfig;
+        const connectionConfig: ConnectionConfig = {
+          database: configOriginal.dbName,
+          user: postgresDbConfig.user,
+          host: postgresDbConfig.host,
+          port: postgresDbConfig.port,
+          password: postgresDbConfig.password,
+        };
+        const db = new Client(connectionConfig);
         db.connect();
         return {
           db,
@@ -98,7 +106,7 @@ export async function RunToDb(dbCon: DbCon, sql: string): Promise<boolean> {
 // FIXME: maybe create shorter hashses
 // and prepared statements are not parametrized
 export async function QueryFromDb(dbCon: DbCon, sql: string): Promise<any[] | null> {
-  TraceEvents(`queryfromdb invoked to get ${sql}, and the connection information is\n--------------\n${JSON.stringify(dbCon)}\n----------------------\n`);
+  TraceEvents(`queryfromdb invoked to get ${sql}\n`);
   switch (dbCon.driver) {
     case DbDriver.SQLite: {
       const con = dbCon as SQLiteCon;

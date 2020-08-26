@@ -2,7 +2,7 @@ import * as express from "express";
 import * as http from "http";
 import * as WebSocket from "ws";
 import { LogWarning, LogInfo, LogError, TraceEvents } from "./messages";
-import { DbNameType, DbCon, SocketIdType, DbConfig } from "./types";
+import { DbNameType, DbCon, SocketIdType, DbConfig, DbDriver } from "./types";
 import { CloseDb, OpenDb, RunToDb, QueryFromDb } from "./helper";
 
 interface DielMessage {
@@ -15,11 +15,11 @@ interface DielMessage {
   };
   message?: {
     dbName: string;
+    toPrint: string; // for testing rn
   };
 }
 
 export function StartDielDbServer(configs: DbConfig[]) {
-
   const app = express();
   // initialize a simple http server
   const server = http.createServer(app);
@@ -50,7 +50,9 @@ export function StartDielDbServer(configs: DbConfig[]) {
       if (dbs) {
         dbs.forEach((dbCon, dbName) => {
           if (dbCon.cleanUpQueries) {
+            console.log("?????????what is this");
             RunToDb(dbCon, dbCon.cleanUpQueries);
+            console.log("!!!!!!!!!!!!what is this");
           } else {
             LogError(`Cleanup queries not defined for ${dbName}`);
           }
@@ -82,7 +84,29 @@ export function StartDielDbServer(configs: DbConfig[]) {
       switch (msg.action) {
         case "close": {
           const dbCon = dbs.get(dbName);
-          if (dbCon) CloseDb(dbCon);
+          if (dbCon) {
+            if (dbCon.cleanUpQueries) {
+              switch(dbCon.driver) {
+                case DbDriver.Postgres: {
+                  const queries = dbCon.cleanUpQueries.split(";");
+                  for (let q of queries) {
+                    const results = await QueryFromDb(dbCon, q + ";");
+                    TraceEvents(`Result for exec action\n-------------\n${JSON.stringify(results, null, 2)}\n----------------`);
+                  }
+                  break;
+                }
+                case DbDriver.SQLite: {
+                  TraceEvents(`Clean up \n${dbCon.cleanUpQueries}`);
+                  RunToDb(dbCon, dbCon.cleanUpQueries);
+                  break;
+                }
+                default: {
+                  RunToDb(dbCon, dbCon.cleanUpQueries);
+                }
+              }
+            }
+            CloseDb(dbCon);
+          };
           return null;
         }
         case "cleanup": {
@@ -116,9 +140,17 @@ export function StartDielDbServer(configs: DbConfig[]) {
         case "run": {
             const dbCon = dbs.get(dbName);
             if (dbCon) {
+              const execStart = new Date();
+
               RunToDb(dbCon, msg.sql);
+
+              const execEnd = new Date();
+
+              const execTime = execEnd.getTime() - execStart.getTime();
+
               ws.send(JSON.stringify({
                 id: msg.id,
+                // execTime: execTime
               }));
               return null;
             } else {
@@ -129,11 +161,22 @@ export function StartDielDbServer(configs: DbConfig[]) {
           if (msg.sql) {
             const dbCon = dbs.get(dbName);
             if (dbCon) {
-              const results = await QueryFromDb(dbCon, msg.sql);
+
+              const execStart = new Date();
+
+              const results = await QueryFromDb(dbCon, msg.sql); // I assume this is where it executes?
+
+              const execEnd = new Date();
+
+              const execTime = execEnd.getTime() - execStart.getTime();
+
+              console.log("EXEC TIME FROM DB SEVER IS " + execTime);
+
               TraceEvents(`Result for exec action\n-------------\n${JSON.stringify(results, null, 2)}\n----------------`);
               ws.send(JSON.stringify({
                 id: msg.id,
-                results
+                results,
+                execTime: execTime
               }));
               return null;
             } else {
@@ -142,6 +185,12 @@ export function StartDielDbServer(configs: DbConfig[]) {
           } else {
             return LogWarning(`Exec actions must define the query and the db name`);
           }
+        }
+        case "relay": { // new API to handle db server to db server connection
+          const toPrint = msg.message ? msg.message.toPrint : null;
+          console.log("I got called!!!!");
+          console.log(toPrint);
+          return null;
         }
         default: {
           return LogWarning(`Action ${msg.action} not defined`);
@@ -169,5 +218,7 @@ export function StartDielDbServer(configs: DbConfig[]) {
   // start our server
   server.listen(process.env.PORT || 8999, () => {
       console.log(`Server started on port ${(server.address() as WebSocket.AddressInfo).port} :)`);
+
+      // console.log(server.address());
   });
 }
