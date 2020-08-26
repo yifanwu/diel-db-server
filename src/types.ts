@@ -32,6 +32,8 @@ export enum DbDriver {
 
 // ------------ Internal Types -------------
 
+export type SocketUrl = string;
+export type DbIdType = number;
 export type DbNameType = string;
 export type SocketIdType = number;
 
